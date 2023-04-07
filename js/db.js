@@ -1414,7 +1414,28 @@ const store = (initState, reducer) => ({
   dispatch(action) {
     this._state = reducer(this._state, action);
   }
-})</pre>Создание store. Принимает исходное состояние а также reducer который и будет изменять его.`
+})</pre>Создание store. Принимает исходное состояние а также reducer который и будет изменять его<pre>
+function SomeComp({propName, propNameForDispatch}) {
+  return (
+    &lt;button type="button" onClick={propNameForDispatch}&gt;{propName}&lt;/button&gt;
+  );
+}
+const mapStateToProps = (state) => ({
+  propName: state.someValue;
+});
+const mapDispatchToProps = (dispatch) => ({
+  propNameForDispatch: () => dispatch(someAction())
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(SomeComp);</pre>Чтобы связать redux с компонентом сначала создаем ф-цию которая вернет объект, где именем поля будет пропс а значением любое значение из store. Затем создаем ф-цию которая вернет объект где также именем будет пропс а значением ф-ция dispatch с нужным action. После всего с помощью connect связываем эти ф-ции с нашим компонентом и в дальнейшем можем обращаться к данным store или диспатчить в него что то с помощью переданных в props свойств, благодаря этому в случае если store изменится компонент перерисуется т.к. значения из store передаются в props<pre>
+function SomeComp() {
+  const dispatch = useDispatch();
+  const someValue = useSelector((state) => state.value); 
+
+  return (
+    &lt;button type="button" onClick={dispatch(someAction())}&gt;{someValue}&lt;/button&gt;
+  );
+}</pre>В новых версиях достаточно использовать хуки. useSelector является аналогом mapStateToProps и позволяет получать любые данные из store, а также неявно подписывается на изменения состояния. useDispatch это аналог mapDispatchToProps`
     ],
     [
       'Глобальное состояние (RTK)',
@@ -1438,7 +1459,20 @@ const reducer = createReducer(initState, (builder) => {
     .addCase(ACTION.ADD_SOME, (state, action) => {
       state = state + action.payload;
     });
-});</pre>Создаем reducer с помощью RTK. Получает начальное состояние через 1 аргумент. Чтобы добавить какое то действие достаточно дописать addCase(), в котором в 1 аргумент передается тип action а во 2 callback который получает обязательный state и action если были переданны какие то данные. Внутри callback описывается логика изменения состояния. Благодаря библиотеке immet мы можем сразу указывать какое свойство объекта(если state объект) необходимо изменить(например: state.id = action.payload)`
+});</pre>Создаем reducer с помощью RTK. Получает начальное состояние через 1 аргумент. Чтобы добавить какое то действие достаточно дописать addCase(), в котором в 1 аргумент передается тип action а во 2 callback который получает обязательный state и action если были переданны какие то данные. Внутри callback описывается логика изменения состояния. Благодаря библиотеке immer мы можем сразу указывать какое свойство объекта(если state объект) необходимо изменить(например: state.id = action.payload). Сама библиотека позволяет подобныйм образом изменять иммутабельный объект<pre>
+const initStore = {
+  count: 0,
+  someData: []
+};
+const reducer = createReducer(initStore, (builder) => {
+  builder
+    .addCase(ACTION.INC, (state) => {
+      state.count += 1;
+    })
+    .addCase(ACTION.ADD_DATA, (state, action) => {
+      state.data.push(action.payload);
+    });
+});</pre>С помощью immer можно также спокойно добавлять что то в массив в объекте initStore и библиотека сама все правильно обработает`
     ],
     [
       'Жизненные циклы в функциональном компоненте',
@@ -1448,10 +1482,38 @@ useEffect(() => {
   return () => {
     ...(2)...
   }
-}, [x]);</pre>Аналог жизненного цикла componentDidUpdate в главном блоке кода и componentWillUnmount в виде блока кода в return, где :<br>1) какая то логика при изменении<br>2) какая то логика в return которая выполнится если компонент будет уничтожен<br>3) после callback ф-ции передается массив зависимостей в котором можно либо указать какие то переменные которые послужат триггером для запуска useEffect либо оставить массив пустым и тогда useEffect сработает 1 раз как componentDidMount но только после отрисовки компонента<pre>
-useLayerEffect(() => {
+}, [x]);</pre>Аналог жизненного цикла componentDidUpdate в главном блоке кода и componentWillUnmount в виде блока кода в return, где :<br>1) какая то логика при изменении<br>2) какая то логика в return которая выполнится если компонент будет уничтожен<br>3) после callback ф-ции передается массив зависимостей в котором можно либо указать какие то переменные которые послужат триггером для запуска useEffect либо оставить массив пустым и тогда useEffect сработает 1 раз как componentDidMount но только после отрисовки компонента. Компонент может содержать несколько эффектов и они будут выполнены в том порядке в котором были записаны<pre>
+useLayoutEffect(() => {
   ...
 });</pre>Этот хук является аналогом componentDidMount и сработает до отрисовки компонента`
+    ],
+    [
+      'useEffect()',
+      `Хук который в первую очередь служит методом жизненных циклов компонента. Также служит для того чтобы изолировать побочные эффекты от логики компонента. Что входит в эти эффекты:<br>
+      1) Получение данных<br>
+      2) Работа с таймерами<br>
+      3) Прямое изменение DOM<br>
+      4) Изменение размеров элемента<br>
+      5) Работа с локальных хранилищем<br>
+      6) Подписка на услуги<br>
+      В общем это логика которую надо изолировать от рендеринга`
+    ],
+    [
+      'flux архитектура',
+      `Подход когда глобальное состояние выносится отдельно от логики компонентов`
+    ],
+    [
+      'defaultProps',
+      `<pre>
+function SomeComp(props) {
+  return(
+    &lt;div&gt;{ props.name }&lt;/div&gt;
+  );
+}
+
+SomeComp.defaultProps = {
+  name: 'Guest'
+}</pre>Свойство позволяет задать пропсы по умолчанию`
     ],
     [
       'Использование styled библиотеки',
