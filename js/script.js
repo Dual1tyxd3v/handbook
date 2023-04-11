@@ -82,3 +82,9 @@ function loadData() {
     }
   }
 }
+
+
+const o = {};
+o.toString = () => 'test';
+o.valueOf = () => 3;
+console.log(o + 4)
