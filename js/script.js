@@ -82,9 +82,12 @@ function loadData() {
     }
   }
 }
-
-
-const o = {};
-o.toString = () => 'test';
-o.valueOf = () => 3;
-console.log(o + 4)
+function* cicle() {
+  yield 'a';
+  yield 'aaa';
+  yield 'text';
+}
+const x = cicle();
+console.log(x.next());
+console.log(x.next());
+console.log(x.next());
