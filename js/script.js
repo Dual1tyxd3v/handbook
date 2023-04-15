@@ -82,12 +82,3 @@ function loadData() {
     }
   }
 }
-function* cicle() {
-  yield 'a';
-  yield 'aaa';
-  yield 'text';
-}
-const x = cicle();
-console.log(x.next());
-console.log(x.next());
-console.log(x.next());
