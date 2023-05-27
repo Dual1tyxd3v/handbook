@@ -70,8 +70,8 @@ const data = {
       '1. ul - маркированный список<br>2. ol - нумерованный список<br>3. dl - список определений'
     ],
     [
-      'Типы input',
-      '1. text<br>2. password<br>3. submit<br>4. button<br>5. email<br>6. number<br>7. checkbox<br>8. date'
+      'Тэг <span class="tag">&lt;input /&gt;</span>',
+      'Предназначен для ввода данных пользователем. Взависимости от указанного типа производит различные проверки а также по разному отображает. Имеет следующие типы:<br>1. text<br>2. password<br>3. submit<br>4. button<br>5. email<br>6. number<br>7. checkbox<br>8. date<br>Важно также помнить что этот тег не наследует по умолчанию шрифты и цвет текста и поэтому эти свойства стоит указывать самому'
     ],
     [
       `Тег <span class="tag">&lt;meta</span>
