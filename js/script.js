@@ -1,3 +1,5 @@
+const data = { Git, Html, Css, Javascript, JQUERY, React, Sass, Logic, TypeScript, Unit_Tests };
+
 function toggleHide(e) {
   const contentBlock = e.parentElement.nextElementSibling;
   contentBlock.style.display === 'block' ? $(contentBlock).slideUp(500) : $(contentBlock).slideDown(500);
