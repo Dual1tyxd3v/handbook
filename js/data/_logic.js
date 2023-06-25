@@ -98,6 +98,22 @@ return {[newV]: del, ...result}
 const addValue = ({...val}, obj) => {...obj, ...val}</pre>`
   ],
   [
+    `Функция преобразования числа в строку`,
+    `<pre>
+const myToString = num => {
+  const numbers = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+  let result = [];
+  const prefix = num > 0 ? '' : '-';
+  while(num !== 0) {
+    const lastNum = num % 10;
+    result.unshift(lastNum);
+    num = Math.trunc(num / 10);
+  }
+  result.unshift(prefix);
+  return result.join('');
+}</pre>`
+  ],
+  [
     `Функция фибоначчи`,
     `<pre>
 function fibRecursive(n) {
