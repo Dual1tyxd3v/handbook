@@ -10,6 +10,7 @@ function toggleHide(e) {
 const container = document.querySelector('.container');
 
 loadData();
+document.querySelector('.search').focus();
 
 function loadData() {
   for (let k in data) {
@@ -40,12 +41,12 @@ function loadData() {
     });
   }
   // open and close tabs 
-  document.querySelectorAll('.main-trigger, .sub-trigger').forEach((link) => {
-    link.addEventListener('click', (e) => {
-      e.preventDefault();
+  document.querySelector('.container').addEventListener('click', (e) => {
+    e.preventDefault();
+    const target = e.target.closest('.sub-trigger') || e.target.closest('.main-trigger');
+    if (!target) return;
 
-      toggleHide(e.currentTarget);
-    });
+    toggleHide(target);
   });
   // search
   document.querySelector('form').addEventListener('submit', (e) => {
