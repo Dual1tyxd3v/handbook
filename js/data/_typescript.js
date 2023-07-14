@@ -62,39 +62,39 @@ guitarCount: number,
     `Дженерики`,
     `Дженерик - это обобщенный тип который нужен для более гибкого создания типов. По сути это абстрактный каркас позволяющий указывать типы данных на этапе использования<pre>
 type SomeType&lt;T&gt; {
-id: number;
-any: T; 
+  id: number;
+  any: T; 
 }
 const variable: SomeType&lt;string&gt; = {
-id: 4,
-any: 'hello' 
+  id: 4,
+  any: 'hello' 
 }</pre>Позволяет передать тип на этапе использования подобно аргументу ф-ции<pre>
 type SomeType = {
-id: number;
-name: string; 
+  id: number;
+  name: string; 
 }
 type ObjKeys&lt;T&gt; = keyof T;
 type SomeTypeKeys = ObjKeys&lt;SomeType&gt;\;
 const key: SomeTypeKeys = 'name';</pre>Создает обобщенный тип на основе ключей объекта. По сути берет ключи объекта и превращает их в строковый или числовой литерал и обобщает через |<hr>
 <b>type SomeType&lt;T = string&gt; = { ... };</b> - Создание дженерика с значением по умолчанию<pre>
 function someFunc&lt;T&gt; (arg: T): T {
-return arg; 
+  return arg; 
 }
 someFunc&lt;number&gt;(4);</pre>Дженерик в ф-ции позволяет более гибко использовать ф-цию указывая тип на этапе использования<hr>
 <b>const someFunc = &lt;T&gt;(arg: T): T => { ... }</b> - дженерик в стрелочной ф-ции<pre>
 type SomeType&lt;T, U&gt; = {
-id: T;
-name: U; 
+  id: T;
+  name: U; 
 }
 const x: SomeType&lt;number, string&gt; = {
-id: 4,
-name: 'Bob' 
+  id: 4,
+  name: 'Bob' 
 }</pre>В дженериках можно использовать несколько условных типов<pre>
 type SomeType = {
-length: number;
+  length: number;
 }
 function someFunc&lt;T extends SomeType&gt;(arg: T): number {
-return arg.length;
+  return arg.length;
 }</pre>Ограничения дженерика позволяют указывать некие условия. В данном случае мы указываем что тип аргумента должен содержать свойство length с числовым значением`
   ],
   [
