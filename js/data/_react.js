@@ -14,6 +14,83 @@ const React = [
     `Позволяет более удобно и легко поддерживать синхронизацию между данными и компонентами и быстро реагировать в случае изменения данных и изменять только ту часть интерфейса которая зависит от этих данных. Также благодаря виртуальному DOM дереву нет необходимости каждый раз проходит по всему настоящему DOM дереву`
   ],
   [
+    'чистый Redux',
+    `<b>customer-reducer.js</b><pre>
+const initStore = {     <sup>1</sup>
+  name: '',
+  createdAt: '' 
+};
+export const reducerCustomer = (state = initStore, action) => {
+  switch(action.type) {       <sup>2</sup>
+    case 'customer/create':
+      return { ...state,
+        name: action.payload.name,
+        createdAt: action.payload.createdAt };
+    case 'customer/delete':
+      return { ...state, name: '', createdAt: '' };
+    default:
+      return state;       <sup>3</sup>
+  }
+};
+export const createCustomer = (name) => ({    <sup>4</sup>
+  type: 'customer/create',
+  payload: { name, createdAt: new Date().toISOString() }
+});
+export const deleteCustomer = () => ( {type: 'customer/delete'});</pre><b>account-reducer.js</b><pre>
+const initStore = {     <sup>5</sup>
+  balance: 0,
+  loan: 0
+};
+export const reducerAccount = (state = initStore, action) => {
+  switch(action.type) {
+    case 'account/deposit':
+      return { ...state, balance: state.balance + action.payload };
+    case 'account/withdraw':
+      return { ...state, balance: state.balance - action.payload };
+    default:
+      return state;
+  }
+};
+export const deposit = (amount) => ({
+  type: 'account/deposit',
+  payload: amount
+});
+export const withdraw = (amount) => ({
+  type: 'account/withdraw',
+  payload: amount
+});</pre><b>store.js</b><pre>
+const rootReducer = combineReducers({   <sup>6</sup>
+  customer: reducerCustomer,
+  account: reducerAccount
+});
+export const store = createStore(rootReducer);    <sup>7</sup></pre>
+<b>index.js</b><pre>
+...       <sup>8</sup>
+&lt;Provider store={store}&gt;
+  &lt;App /&gt;
+&lt;/Provider&gt;</pre><b>component.js</b><pre>
+function Component() {
+  const {name} = useSelector((store) => store.customer);    <sup>9</sup>
+  const dispatch = useDispatch();     <sup>10</sup>
+  return (
+    &lt;button onClick={() => dispatch(deleteCustomer())}&gt;    <sup>11</sup>
+      {name}
+    &lt;/button&gt;
+  );
+}</pre>
+1) Сначала создаем нарезки состояния. Первым описываем начальное состояние<br>
+2) Затем описываем редюсер, где в качестве дефолтного значения state указываем начальное состояние<br>
+3) Если action имеет неизвестный тип возвращаем текущее состояние store. Это необходимо в случае склейки разных редюсеров потому что в случае при диспатче action из другого редюсера текущий не увидит его и вернет нужное состояние<br>
+4) создание самописного action creator. Все побочные эффекты (напр. new Date()) лучше указывать напрямую в action т.к. редюсер по сути чистая функция<br>
+5) создание другого слайса store<br>
+6) в общем store файле сначала склеиваем все редюсеры в один<br>
+7) создаем глобальный store<br>
+8) в главном файле оборачиваем все приложение в Provider и указываем store<br>
+9) хук useSelector позволяет выбрать нужные свойства из store а также неявно подписывает компонент на изменения в состоянии<br>
+10) хук useDispatch возвращает функцию которую потом можно использовать для диспатча экшенов<br>
+11) использование dispatch функции и action`
+  ],
+  [
     'React.lazy()',
     `Метод React для разделения bundle. При конечной сборке приложения весь код собирается в 1 большой - bundle. Если приложение приложение большое это может вызвать проблемы в производительности. lazy() позволяет разбить 1 bundle на несколько файлов и подгружать их только когда в этом есть необходимость<br>
     <b>const Component = React.lazy(() => import('./components/Component'));</b> - метод принимает callback где динамически импортируется модуль. При таком подходе модуль должен экспортироваться по default. Данный split bundle используется вместе с &lt;Suspense&gt;`
