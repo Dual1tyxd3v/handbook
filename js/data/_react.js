@@ -732,7 +732,8 @@ const router = createBrowserRouter([    <sup>1</sup>
     element: &lt;Layout /&gt;, children: [    <sup>2</sup>
       { element: &lt;Main /&gt;, path: '/' },     <sup>3</sup>
       { element: &lt;Order /&gt;, path: '/order/:id' },   <sup>4</sup>
-      { element: &lt;Menu /&gt;, path: '/menu', loader: loader, errorElement: &lt;ErrorElement /&gt;}     <sup>5</sup>
+      { element: &lt;Menu /&gt;, path: '/menu/:id', loader: loader, errorElement: &lt;ErrorElement /&gt;},     <sup>5</sup>
+      { element: &lt;CreateOrder /&gt;}, path: '/order/new', action: action }   <sup>11</sup> 
     ]
   }
 ]);
@@ -743,8 +744,8 @@ function Menu() {
   const menu = useLoaderData();   <sup>7</sup>
   return &lt;p&gt;{menu.length}&lt;/p&gt; 
 }
-export async function loader() {      <sup>8</sup>
-  const menu = await someAPILoading();
+export async function loader({params}) {      <sup>8</sup>
+  const menu = await someAPILoading(params.id);
   return menu;  
 }</pre><b>errorElement.jsx</b><pre>
 function ErrorElement() {
@@ -759,6 +760,31 @@ function Layout() {
     { isLoading ? &lt;Spinner /&gt; : &lt;Outlet /&gt;}
     &lt;/&gt;
   ); 
+}</pre><b>createOrder.jsx</b><pre>
+function CreateOrder() {
+  const errors = useActionData();   <sup>12</sup>
+  const nav = useNavigation();
+  cosnt isSubmitting = nav.state === 'submitting';  <sup>13</sup>
+  return (
+    &lt;Form&gt;    <sup>14</sup>
+      &lt;Input name="phone"&gt;    <sup>15</sup>
+      {error?.phone && &lt;p&gt;{error.phone}&lt;/p&gt;}    <sup>16</sup>
+      &lt;button disabled={isSubmitting}&gt;Submit&lt;/button&gt;
+    &lt;/Form&gt;
+  ); 
+}
+export async function action({request}) {   <sup>17</sup>
+  const formData = await request.formData();    <sup>18</sup>
+  const data = Object.fromEntries(formData);    <sup>19</sup>
+  const order = {     <sup>20</sup>
+    ...data,
+    cart: JSON.parse(data.cart)
+  };
+  const error = {};     <sup>21</sup>
+  if (!checkPhone(order.phone)) error.phone = 'Incorrect number';   <sup>22</sup>
+  if (Object.keys(error).length) return error;    <sup>23</sup>
+  const newOrder = await postData(order);   <sup>24</sup>
+  return redirect('/order/' + newOrder.id);   <sup>25</sup>
 }</pre>
 1) сначала создаем объект router где функция creator принимает массив с объектами в виде настроек для каждого роута<br>
 2) опционально устанавливаем общий layout который будет виден на каждом роуте, либо можем просто через запятую указать необходимые роуты<br>
@@ -769,9 +795,24 @@ function Layout() {
 -- loader - прикрепляем функцию загрузчик которая подгружает данные для компонента<br>
 6) в главном компоненте просто подключаем RouterProvider в который указываем недавно созданный router<br>
 7) с помощью хука получаем загруженные данные<br>
-8) функция loader которая отвечает за загрузку данных. Она должна находится рядом с компонентом а также по соглашению иметь имя loader. Сами данные загружаются только когда роут меняется на целевой. В случае ререндера компонента данные не перезагружаются. Функция должна возвращать результат загрузки<br>
+8) функция loader которая отвечает за загрузку данных. Она должна находится рядом с компонентом а также по соглашению иметь имя loader. Сами данные загружаются только когда роут меняется на целевой. В случае ререндера компонента данные не перезагружаются. Функция должна возвращать результат загрузки. Также эта функция может принимать необязательный пропс params для доступа к переданным данным через адресную строку (аналогия useParams)<br>
 9) в компоненте который отмечен как errorElement, хук возвращает все ошибки и исключения в ходе рендера или лоадера<br>
-10) чтобы на время загрузки компонента отображать какой то UI используется хук и проверяется его state`
+10) чтобы на время загрузки компонента отображать какой то UI используется хук и проверяется его state<br>
+11) В роуте CreateOrder используется экспортированный action который позволяет привязать компонент функции action<br>
+12) Хук позволяет получить возвращаемые данные из функции action. В данном случае это объект ошибок если не пройдена валидация<br>
+13) С помощью хука useNavigation определяем текущее состояние навигации для изменения UI во время отправки формы<br>
+14) Form - компонент react router. Это контролируемый элемент form с рядом преимуществ. По умолчанию preventDefault, отправка может обрабатываться в специальной функции action<br>
+15) По скольку используем управляемый Form то отслеживать состояние внутренних инпутов не нужно, за нас уже все сделано<br>
+16) В случае если action вернет какую то ошибку мы можем отобразить ее данные<br>
+17) Специальная функция action, аналог loader. Может принимать пропс request в котором например может находится данные из отправленной формы<br>
+18) Получаем данные из формы для обработки<br>
+19) Преобразуем данные в объект<br>
+20) В случае если это сложный объект который содержит вложенные объекты/массивы то сначала преобразуем его<br>
+21) Создаем пустой объект errors для фиксирования ошибок на стадии валидации полей<br>
+22) Производим валидацию поля и если что то не так создаем новое свойство в объекте с сообщением<br>
+23) Проверяем имеет ли объект errors свойства и если да просто возвращаем его для дальнейшей обработки в самом компоненте<br>
+24) В случае если форма прошла валидацию производим уже отправку данных через какой то API<br>
+25) Как только приходит ответ возвращаем redirec(). Эта функция react router которая позволяет делать перенаправление не из компонента`
   ],
   [
     'Комбинирование/нарезка reducer',
