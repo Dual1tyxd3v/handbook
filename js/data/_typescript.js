@@ -11,6 +11,13 @@ throw new Error('error');
     `<b>const ar: string[] = ['a', 'b'];</b> - типизация массива со строками`
   ],
   [
+    `Типизация dispatch`,
+    `<b>store.ts</b><pre>
+...
+type AppDispatch = typeof store.dispatch;
+const useAppDispatch = () => dispatch&lt;AppDispatch&gt;();</pre>При использовании middleware thunk может возникнуть проблема когда понадобиться вызвать async action в dispatch т.к. данный тип по умолчанию не поддерживается стандартным dispatch. Этот подход поможет исправить ошибку`
+  ],
+  [
     `Тип never`,
     `<pre>
 function someF(): never {
