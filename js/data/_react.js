@@ -14,6 +14,58 @@ const React = [
     `Позволяет более удобно и легко поддерживать синхронизацию между данными и компонентами и быстро реагировать в случае изменения данных и изменять только ту часть интерфейса которая зависит от этих данных. Также благодаря виртуальному DOM дереву нет необходимости каждый раз проходит по всему настоящему DOM дереву`
   ],
   [
+    'styled components',
+    `Библиотека позволяющая создавать стилизованные компоненты на основе HTML элементов или реакт компонентов<br>
+    <b>Header.js</b><pre>
+const sizes = {     <sup>1</sup>
+  small: css\`font-size: 20px;\`,
+  big: css\`font-size: 40px;\`,
+};
+const Heading = styled.h1\`   <sup>2</sup>
+  color: red;
+
+  &:hover {       <sup>3</sup>
+    color: green;
+  }
+
+  {props => sizes[props.size]}      <sup>4</sup>
+\`;
+Heading.defaultProps = 'small';     <sup>5</sup>
+const StyledLink = styled(NavLink)\`      <sup>6</sup>
+  text-decoration: none;
+\`;
+function Header() {
+  return (
+    &lt;&gt;
+      &lt;Heading as='h3' /&gt;     <sup>7</sup>
+      &lt;StyledLink to='/'&gt;Home&lt;/StyledLink&gt;
+    &lt;/&gt;
+  ); 
+}</pre><b>GlobalStyles.js</b><pre>
+const GlobalStyles = createGlobalStyles\`     <sup>8</sup>
+  html {
+    font-size: 62.5%;
+  }
+\`;</pre><b>App.js</b><pre>
+fucntion App() {
+  return (
+    &lt;&gt;
+      &lt;GlobalStyles /&gt;        <sup>9</sup>
+      &lt; Main /&gt;
+    &lt;/&gt;
+  );
+}</pre>
+1) часть CSS кода можно хранить в переменных. Для этого в значении свойства вызываем функцию css из библиотеки styled-components в которой с помощью бэктиков уже описываем сам CSS<br>
+2) обычное объявление стилизованного компонента<br>
+3) чтобы описать состояние элемента достаточно использовать синтаксис SCSS<br>
+4) для использования props достаточно описать callback который принимает props и возвращает какое то значение. Благодаря этому можно использовать ранее созданную переменную со стилями<br>
+5) также можно по умолчанию задать значение props<br>
+6) для стилизации нестандартных элементов/компонентов можно вызвать styled как функцию и передать в нее компонент как аргумент<br>
+7) props as позволяет изменить тип ранее созданного компонента на тот что указан в props<br>
+8) для создания глобальных стилей вызывается специальная функция вместо styled. Функция возвращает компонент<br>
+9) для подключения глобальных стилей необходимо поместить компонент на самый верх всех компонентов`
+  ],
+  [
     'чистый Redux',
     `<b>customer-reducer.js</b><pre>
 const initStore = {     <sup>1</sup>
@@ -158,6 +210,126 @@ function Some() {
     `<b><Component style={{fontSize = '10px'}} /></b> - Передаются в виде объекта где имя стиля является свойством а значение - значением, поэтому нужно не забывать ставить {} для обозначения JS блока`
   ],
   [
+    'react-query',
+    `Библиотека позволяющая осуществлять запросы. Имеет ряд преимуществ:<br>
+    1) Есть поддержка актуальности данныхв течении какого то времени и автоматическая перезагрузка данных<br>
+    2) Данные хэшируются<br>
+    3) Есть возможность использовать хэшированные данные в любом месте приложения<br>
+    4) Есть статус запроса<br>
+    <b>App.jsx</b><pre>
+const queryClien = new QueryClient({      <sup>1</sup>
+  defaultOptions: {
+    queries: {
+      staleTime: 60 * 1000        <sup>2</sup>
+    }
+  }
+});
+function App() {
+  return (
+    &lt;QueryClientProvider client={queryClient}&gt;      <sup>3</sup>
+      &lt;ReactQueryDevtools initialOpen={false}&gt;      <sup>4</sup>
+        &lt;Header /&gt;
+        &lt;Main /&gt;
+      &lt;/ReactQueryDevtools&gt;
+    &lt;/QueryClientProvider&gt;
+  ); 
+}</pre>
+<b>SomeTable.jsx</b><pre>
+function SomeTable() {
+  const { data, isLoading } = useQuery({      <sup>5</sup>
+    queryKey: ['users'],          <sup>6</sup>
+    queryFn: getUsers             <sup>7</sup>
+  });
+  if (isLoading) return &lt;Spinner /&gt;
+  return (
+    &lt;SomeDataList list={data} /&gt;
+  );
+}</pre><b>SomeDataItem.jsx</b><pre>
+function SomeDataItem({user}) {
+  const queryClient = useQueryClient();     <sup>8</sup>
+  const { mutate, isLoading } = useMutation({     <sup>9</sup>
+    mutationFn: deleteUser,           <sup>10</sup>
+    onError: (e) => alert(e.message),       <sup>11</sup>
+    onSuccess: () => {                <sup>12</sup>
+      queryClient.invalidateQueries({       <sup>13</sup>
+        queryKey: ['users']
+      });
+      alert('All done!');
+    }
+  });
+  return (
+    &lt;button onClick={() => mutate(user.id)}&gt;Delete User&lt;/button&gt;      <sup>14</sup>
+  );
+}</pre>
+1) сначала создаем сам объект react query, где можно также указать какие то настройки<br>
+2) указываем время в мс за которое данные становятся устаревшими. 0 - отключает проверку актуальности данных<br>
+3) все приложение оборачиваем в специальный провайдер указав в нем ранее созданный query client<br>
+4) у библиотеки также имеется свой devtools (необходимо установить отдельно), чтобы пользоваться им также оборачиваем приложение в специальный компонент<br>
+5) в компоненте с помощью хука получаем объект data который будет содержать полученные данные в результате запроса и также можно получить различные состояния запроса<br>
+6) в аргумент передаем объект настроек указав сначала ключ по которому будет хранится хэш данных<br>
+7) а также функцию которая должна быть вызвана. Как только компонент отрисуется будет произведена загрузка данных. В дальнейшем по происшествии времени жизни данных в некоторых ситуациях будет происходить обновление (напр. переключение вкладок браузера)<br>
+8) для того чтобы иметь доступ к объекту query client получаем его через хук<br>
+9) хук позволяет вносить изменения. Возвращает функцию которая будет тригерить необходимую функцию для отправки изменений а также можно получить различные состояния<br>
+10) указываем функцию которая будет вызвана после вызова mutate<br>
+11) в случае ошибки сработает этот callback<br>
+12) callback на случай успеха<br>
+13) специальный метод объекта query client который производит валидацию данных и в случае необходимости вовзращает новые данные<br>
+14) использование функции mutate. Все переданные аргументы попадают в целевую функцию`
+  ],
+  [
+    'react-hot-toast',
+    `Полезная библиотека для вывода уведомлений<br>
+    <b>App.js</b><pre>
+function App() {
+  return (
+    &lt;&gt;
+      &lt;Header /&gt;
+      &lt;Main /&gt;
+      &lt;Toaster       <sup>1</sup>
+        position='top-center'
+        gutter={12}
+        containerStyle={{ margin: '8px' }}
+        toastOptions={{
+          success: { duration: 3000 },    <sup>2</sup>
+          error: { duration: 5000 },  
+          style: {                        <sup>3</sup>
+            fontSize: '16px',
+            color: 'var(--color-green-500)'
+          }
+        }}
+      &gt;
+    &lt;/&gt;
+  ); 
+}</pre><b>SomeComponent.jsx</b><pre>
+function SomeComponent() {
+  return (
+    &lt;&gt;
+      &lt;button onClick={() => toast.successs('Success message')}&gt;Success&lt;/button&gt;      <sup>4</sup>
+      &lt;button onClick={() => toast.error('Error message')}&gt;Error&lt;/button&gt;         <sup>5</sup>
+    &lt;/&gt;
+  ); 
+}</pre>
+1) сначала в главном компоненте в самом низу подключаем компонент Toaster где указываем различные настройки для уведомлений<br>
+2) задаем время отображения для окон с ошибкой и успехом<br>
+3) задаем стили для уведомления. Разрешено использовать собственные переменные из глобальных стилей<br>
+4) когда необходимо вызвать окно уведомления вызываем метод на объекте toast куда передаем текстовое сообщение<br>
+5) разница между success и error только в стилистике. Также можно вызвать обычное уведомление напрямую вызвав функцию toast()`
+  ],
+  [
+    'react-icon',
+    `Полезная библиотека с готовыми иконками. Для вставки иконки в JSX:<br>
+    1) импортировать нужную иконку<br>
+    2) вставить в нужную часть разметки как компонент<pre>
+function Some() {
+  return (
+    &lt;span&gt;
+      &lt;SomeIconName /&gt;
+      text
+    &lt;/span&gt;
+  ); 
+}</pre>`
+  ],
+  [
     'Virtual DOM',
     `Паттерн позволяющий обновлять интерфейс более оптимальным способом. По сути это объект хранящийся в памяти, являющийся посредником между DOM и кодом. Сначала все изменения происходят на нем а затем переносятся на реальный DOM`
   ],
@@ -180,6 +352,27 @@ function Some() {
     `<b>Component</b> - это сам компонент который мы описываем в коде. Он может быть как классовый так и функциональный<br>
     <b>Component Instance</b> - это экземпляр компонента который мы уже используем где то в разметке<br>
     <b>React Element</b> - это результат выполнения экземпляра компонента при выполнении кода. Затем эти элементы помещаются в VDOM`
+  ],
+  [
+    'react-hook-form',
+    `Библиотека для обработки форм<br>
+    <b>SomeForm.jsx</b><pre>
+function SomeForm() {
+  const { register, handleSubmit } = useForm();     <sup>1</sup>
+  function onHandleSubmit(data) {     <sup>2</sup>
+    console.log(data);
+  }
+  return () {
+    &lt;Form onSubmit={handleSubmit(onHandleSubmit)}&gt;    <sup>3</sup>
+      &lt;Input name='phone' {...register('phone')} /&gt;     
+      &lt;Textarea name='text' {...register('text')} /&gt;      <sup>4</sup>
+    &lt;/Form&gt;
+  } 
+}</pre>
+1) с помощью хука получаем функцию для привязки полей и обработки отправки формы<br>
+2) функция для конечной обработки формы. В качестве аргумента получает объект с данными формы который был создан в handleSubmit<br>
+3) в обработчик отправки помещается функция из хука которая в свою очередь принимает конечную функцию обработки<br>
+4) к полям необходимым для отправки прикрепляется немного странная запись для корректной обработки внутри функции обработчика. Благодаря этому элементы формы становятся управляемыми без необходимости использования useState`
   ],
   [
     'События в react',

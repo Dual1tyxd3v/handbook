@@ -11,6 +11,21 @@ throw new Error('error');
     `<b>const ar: string[] = ['a', 'b'];</b> - типизация массива со строками`
   ],
   [
+    `Типизация styled components`,
+    `<pre>
+const sizes = {
+  small: css\`font-size: 20px;\`,
+  big: css\`font-size: 50px;\`
+}
+type Props = {
+  size: keyof (typeof sizes); 
+}
+const Heading = styled.h1&lt;Props&gt;\`
+  color: red;
+\`;</pre>
+Сначала создаем тип а потом передаем ее как дженерик в создаваемый элемент`
+  ],
+  [
     `Типизация dispatch`,
     `<b>store.ts</b><pre>
 ...
