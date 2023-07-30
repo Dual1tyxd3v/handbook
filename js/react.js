@@ -14,6 +14,98 @@ const React = [
     `Позволяет более удобно и легко поддерживать синхронизацию между данными и компонентами и быстро реагировать в случае изменения данных и изменять только ту часть интерфейса которая зависит от этих данных. Также благодаря виртуальному DOM дереву нет необходимости каждый раз проходит по всему настоящему DOM дереву`
   ],
   [
+    'cloneElement(a, b)',
+    `Функция react позволяющая создать копию компонента где:<br>
+    a - компонент который необходимо скопировать<br>
+    b - объект с пропсами если нужно передать<br>
+    Такой подход позволяет передать какие то props в компонент если он получен как children например`
+  ],
+  [
+    'createPortal(a, b)',
+    `Функция react-dom позволяющая прикрепить разметку из любого компонента в определенную часть документа. При этом в react инспекторе дерево компонентов нарушенно не будет<br>
+    a - JSX разметка<br>
+    b - место в документе куда необходимо прикрепить разметку (document.body например)`
+  ],
+  [
+    'render prop pattern',
+    `<pre>
+function Main() {
+  const companies = useSelector(getCompanies);
+  const products = useSelector(getProducts);
+
+  return (
+    &lt;main&gt;
+      &lt;List render={(prod) => &lt;ProductItem key={prod.id} data={prod} /&gt; } data={products} /&gt;
+      &lt;List render={(comp) => &lt;CompanyItem key={comp.id} data={comp} /&gt;} data={companies} /&gt;
+    &lt;/main&gt;
+  ); 
+}
+function List({render, data}) {
+  return(
+    {
+      data.map(render)
+    }
+  );
+}</pre>
+Паттерн позволяет использовать один и тот же компонент для генерации разметки зависящей от разных данных. Такой подход был полезен до появления хуков`
+  ],
+  [
+    'compound component pattern',
+    `<b>AddSome.jsx</b><pre>
+function AddSome() {
+  return (
+    &lt;Modal&gt;       <sup>1</sup>
+      &lt;Modal.Open name='table'&gt;
+        &lt;Button&gt;New some&lt;/Button&gt;
+      &lt;/Modal.Open&gt;
+      &lt;Modal.Window&gt;
+        &lt;SomeTable /&gt;
+      &lt;/Modal.Window&gt;
+    &lt;/Modal&gt;
+  ); 
+}</pre><b>Modal.jsx</b><pre>
+const ModalContext = createContext();     <sup>2</sup>
+function Modal({children}) {
+  const [showName, setShowName] = useState('');     <sup>3</sup>
+  const open = setShowName;           <sup>4</sup>
+  const close  () => setShowName('');
+  return (          <sup>5</sup>
+    &lt;ModalContext.Provider value={open, close, showName}&gt;
+      {children}
+    &lt;/ModalContext.Provider&gt;
+  );
+}
+Modal.Open = function({children, name}) {     <sup>6</sup>
+  const {open} = useContext(ModalContext);
+  return cloneElement(children, {onClick: () => open(name)});     <sup>7</sup>
+}
+Modal.Window = function({children, name}) {
+  const {close, showName} = useContext(ModalContext);
+  if (name !== showName) return null;         <sup>8</sup>
+  return (
+    &lt;Overlay&gt;
+      &lt;StyledModal&gt;
+        &lt;Button onClick={close}&gt;
+          X
+        &lt;Button&gt;
+        {cloneElement(children, {onCLose: close})}
+      &lt;/StyledModal&gt;
+    &lt;/Overlay&gt;
+  );
+}</pre>
+Паттерн позволяет разбить компонент на независимые составные части для последующего переиспользования с разным наполнением при этом сами части не имеют смысла существовать сами по себе<br>
+1) Компонент сам представляет из себя оболочку, которая содержит внутри себя различные составные компоненты<br>
+2) в файле с компонентом создаем контекст для удобного доступа к глобальному состоянию из любого компонента<br>
+3) в оболочке создаем какое то состояние. В данном случае отслеживать и устанавливать текущее активное окно<br>
+4) для удобства создаются понятные функции для установки и сброса имени<br>
+5) оболочка возвращает провайдер с контекстом куда помещается children<br>
+6) по скольку сам по себе составной компонент не имеет смысла он записывается в виде свойства главного компонента<br>
+7) чтобы children компонент мог взаимодействовать с модальным окном используем трюк с клонированием компонента и передачей ему пропсов<br>
+8) в компоненте с самим модальным окном проверяем равны ли имена текущего активного окна и самого компонента, если нет то ничего не рендерим<br>
+9) в случае если имена равны отображаем окно а также передаем функцию закрытия на управляющий элемент и в сам children<br>
+Данный пример позволяет использовать несколько модальных окон в 1 компоненте, которые просто переключаются по имени`
+  ],
+  [
     'styled components',
     `Библиотека позволяющая создавать стилизованные компоненты на основе HTML элементов или реакт компонентов<br>
     <b>Header.js</b><pre>
