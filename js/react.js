@@ -10,8 +10,29 @@ const React = [
     При добавлении обработчика события React не добавляет его в DOM элемент а делегирует его на главный контейнер(div root) где там уже идет распределение`
   ],
   [
-    'Основное преимущество React',
-    `Позволяет более удобно и легко поддерживать синхронизацию между данными и компонентами и быстро реагировать в случае изменения данных и изменять только ту часть интерфейса которая зависит от этих данных. Также благодаря виртуальному DOM дереву нет необходимости каждый раз проходит по всему настоящему DOM дереву`
+    'Error Boundary',
+    `Библиотека позволяющая отлавливать ошибки отрисовки приложения и отображать фолбэк<br>
+    <b>index.jsx</b><pre>
+React.createRoot(document.getElementById('root')).render(
+  &lt;ErrorBoundary         <sup>1</sup>
+    FallbackComponent={ErrorFallback}       <sup>2</sup>
+    onReset={() => window.location.replace('/')}      <sup>3</sup>
+  &gt;
+    &lt;App /&gt;
+  &lt;/ErrorBoundary&gt;
+);</pre><b>ErrorBoundary.jsx</b><pre>
+function ErrorBoundary({error, resetErrorBoundary}) {       <sup>4</sup>
+  return (
+    &lt;div&gt;
+      &lt;p&gt;{error.message}&lt;/p&gt;
+      &lt;button onClick={resetErrorBoundary}&gt;Back to main&lt;/button&gt;
+    &lt;/div&gt;
+  );
+}</pre>
+1) сначала оборачиваем все приложение в специальный компонент<br>
+2) в проп устанавливаем компонент который будет отображен в случае ошибки<br>
+3) также можно установить callback который затем можно будет использовать в fallback компоненте<br>
+4) сам fallback компонент принимает в пропсах объект ошибки и функцию описанную ранее`
   ],
   [
     'cloneElement(a, b)',
